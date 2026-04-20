@@ -1,6 +1,6 @@
 {
 	"name": "@moczix/lit-analyzer",
-	"version": "1.5.1",
+	"version": "1.5.2",
 	"publishConfig": {
 		"access": "public"
 	},
@@ -143,5 +143,5 @@
 			"url": "https://github.com/runem/lit-analyzer/blob/master/CONTRIBUTING.md"
 		}
 	],
-	"gitHead": "cab7138eb02a02b5c0f75e9fb8d83a0411fff22a"
+	"gitHead": "7c50139f509cccd1f678eb8e8410cbd71f0ef964"
 }
