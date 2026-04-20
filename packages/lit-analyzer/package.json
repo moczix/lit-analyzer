@@ -1,6 +1,9 @@
 {
-	"name": "lit-analyzer",
+	"name": "@moczix/lit-analyzer",
 	"version": "2.0.3",
+	"publishConfig": {
+		"access": "public"
+	},
 	"description": "CLI that type checks bindings in lit-html templates",
 	"author": "runem",
 	"license": "MIT",
