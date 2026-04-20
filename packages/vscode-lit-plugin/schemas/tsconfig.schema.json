@@ -123,6 +123,11 @@
 											"description": "Check the existence of attribute names.",
 											"enum": ["off", "warning", "error"]
 										},
+										"prefer-property-binding": {
+											"type": "string",
+											"description": "Prefer Lit property bindings (.prop) over attribute bindings for declared custom element properties.",
+											"enum": ["off", "warning", "error"]
+										},
 										"no-unknown-property": {
 											"type": "string",
 											"description": "Check the existence of property names.",

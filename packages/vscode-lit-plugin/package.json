@@ -360,6 +360,17 @@
 							"error"
 						]
 					},
+					"lit-plugin.rules.prefer-property-binding": {
+						"type": "string",
+						"description": "Prefer Lit property bindings (.prop) over attribute bindings for declared custom element properties.",
+						"default": "default",
+						"enum": [
+							"default",
+							"off",
+							"warning",
+							"error"
+						]
+					},
 					"lit-plugin.rules.no-unknown-property": {
 						"type": "string",
 						"description": "Check the existence of property names.",

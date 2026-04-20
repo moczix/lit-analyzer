@@ -13,6 +13,7 @@ import noMissingImport from "./no-missing-import.js";
 import noNoncallableEventBindingRule from "./no-noncallable-event-binding.js";
 import noNullableAttributeBindingRule from "./no-nullable-attribute-binding.js";
 import noPropertyVisibilityMismatch from "./no-property-visibility-mismatch.js";
+import preferPropertyBinding from "./prefer-property-binding.js";
 import noUnclosedTag from "./no-unclosed-tag.js";
 import noUnintendedMixedBindingRule from "./no-unintended-mixed-binding.js";
 import noUnknownAttribute from "./no-unknown-attribute.js";
@@ -35,6 +36,7 @@ export const ALL_RULES: RuleModule[] = [
 	noUnclosedTag,
 	noUnknownTagName,
 	noUnknownAttribute,
+	preferPropertyBinding,
 	noUnknownProperty,
 	noUnknownEvent,
 	noIncompatiblePropertyType,

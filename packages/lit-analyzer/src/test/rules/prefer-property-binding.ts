@@ -1,0 +1,44 @@
+import { getDiagnostics } from "../helpers/analyze.js";
+import { hasDiagnostic, hasNoDiagnostics } from "../helpers/assert.js";
+import { makeElement } from "../helpers/generate-test-file.js";
+import { tsTest } from "../helpers/ts-test.js";
+
+tsTest("prefer-property-binding is off by default", t => {
+	const { diagnostics } = getDiagnostics([makeElement({ properties: ["kind: string"] }), 'html`<my-element kind="dropdown"></my-element>`']);
+	hasNoDiagnostics(t, diagnostics);
+});
+
+tsTest("Reports attribute binding when the same name is declared as a property on a custom element", t => {
+	const { diagnostics } = getDiagnostics([makeElement({ properties: ["kind: string"] }), 'html`<my-element kind="dropdown"></my-element>`'], {
+		rules: { "prefer-property-binding": true }
+	});
+	hasDiagnostic(t, diagnostics, "prefer-property-binding");
+});
+
+tsTest("Does not report property binding", t => {
+	const { diagnostics } = getDiagnostics([makeElement({ properties: ["kind: string"] }), 'html`<my-element .kind="${"dropdown"}"></my-element>`'], {
+		rules: { "prefer-property-binding": true }
+	});
+	hasNoDiagnostics(t, diagnostics);
+});
+
+tsTest("Reports attribute binding with interpolated expression", t => {
+	const { diagnostics } = getDiagnostics([makeElement({ properties: ["kind: string"] }), 'html`<my-element kind="${x}"></my-element>`'], {
+		rules: { "prefer-property-binding": true }
+	});
+	hasDiagnostic(t, diagnostics, "prefer-property-binding");
+});
+
+tsTest("Does not report built-in elements", t => {
+	const { diagnostics } = getDiagnostics('html`<input type="text" />`', {
+		rules: { "prefer-property-binding": true }
+	});
+	hasNoDiagnostics(t, diagnostics);
+});
+
+tsTest("Does not report unknown custom element tags", t => {
+	const { diagnostics } = getDiagnostics('html`<x-unknown kind="a"></x-unknown>`', {
+		rules: { "prefer-property-binding": true, "no-unknown-tag-name": false }
+	});
+	hasNoDiagnostics(t, diagnostics);
+});

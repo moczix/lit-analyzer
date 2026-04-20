@@ -8,6 +8,7 @@ export type LitAnalyzerRuleId =
 	| "no-missing-import"
 	| "no-unclosed-tag"
 	| "no-unknown-attribute"
+	| "prefer-property-binding"
 	| "no-unknown-property"
 	| "no-unknown-event"
 	| "no-unknown-slot"
@@ -39,6 +40,7 @@ const DEFAULT_RULES_SEVERITY: Record<LitAnalyzerRuleId, [LitAnalyzerRuleSeverity
 	"no-missing-import": ["off", "warn"],
 	"no-unclosed-tag": ["warn", "error"],
 	"no-unknown-attribute": ["off", "warn"],
+	"prefer-property-binding": ["off", "warn"],
 	"no-unknown-property": ["off", "warn"],
 	"no-unknown-event": ["off", "off"],
 	"no-unknown-slot": ["off", "warn"],
