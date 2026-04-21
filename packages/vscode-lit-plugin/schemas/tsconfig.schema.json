@@ -125,7 +125,7 @@
 										},
 										"prefer-property-binding": {
 											"type": "string",
-											"description": "Prefer Lit property bindings (.prop) over attribute bindings for declared custom element properties.",
+											"description": "Prefer Lit property bindings (.prop) over attribute bindings for Lit @property / static properties only (not plain fields or native attrs).",
 											"enum": ["off", "warning", "error"]
 										},
 										"no-unknown-property": {

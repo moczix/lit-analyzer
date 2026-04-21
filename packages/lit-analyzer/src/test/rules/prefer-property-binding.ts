@@ -42,3 +42,26 @@ tsTest("Does not report unknown custom element tags", t => {
 	});
 	hasNoDiagnostics(t, diagnostics);
 });
+
+tsTest("Does not report attribute binding for a plain class field without Lit @property meta", t => {
+	const { diagnostics } = getDiagnostics(
+		[
+			{
+				fileName: "bare-el.ts",
+				text: `
+				class BareEl extends HTMLElement {
+					plain = "";
+				}
+				customElements.define("bare-el", BareEl);
+				`
+			},
+			{
+				fileName: "main.ts",
+				entry: true,
+				text: `import "./bare-el.js"; html\`<bare-el plain="x"></bare-el>\`;`
+			}
+		],
+		{ rules: { "prefer-property-binding": true } }
+	);
+	hasNoDiagnostics(t, diagnostics);
+});

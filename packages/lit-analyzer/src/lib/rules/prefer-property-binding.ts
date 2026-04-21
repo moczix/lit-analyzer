@@ -1,15 +1,19 @@
 import { LIT_HTML_PROP_ATTRIBUTE_MODIFIER } from "../analyze/constants.js";
+import { HtmlProp } from "../analyze/parse/parse-html-data/html-tag.js";
 import { HtmlNodeAttrAssignmentKind } from "../analyze/types/html-node/html-node-attr-assignment-types.js";
 import { HtmlNodeAttr, HtmlNodeAttrKind } from "../analyze/types/html-node/html-node-attr-types.js";
 import { HtmlNodeKind } from "../analyze/types/html-node/html-node-types.js";
 import { RuleFix } from "../analyze/types/rule/rule-fix.js";
 import { RuleModule } from "../analyze/types/rule/rule-module.js";
+import { RuleModuleContext } from "../analyze/types/rule/rule-module-context.js";
+import { getNodeIdentifier } from "../analyze/util/ast-util.js";
 import { isCustomElementTagName } from "../analyze/util/is-valid-name.js";
 import { documentRangeToSFRange, rangeFromHtmlNodeAttr } from "../analyze/util/range-util.js";
 
 /**
  * Suggests using Lit property bindings (`.prop=${...}`) instead of attribute bindings (`prop="..."`)
- * for members declared on a custom element class, so values flow through TypeScript as expressions.
+ * only for Lit reactive properties (`@property` / `static properties`), not for other analyzer members
+ * (e.g. ad-hoc fields or DOM-like names without Lit `meta`).
  */
 const rule: RuleModule = {
 	id: "prefer-property-binding",
@@ -29,7 +33,7 @@ const rule: RuleModule = {
 		if (htmlTag == null || htmlTag.builtIn) return;
 
 		const prop = htmlTag.properties.find(p => p.name.toLowerCase() === htmlAttr.name.toLowerCase());
-		if (prop == null) return;
+		if (prop == null || !isLitReactivePublicProperty(prop, context)) return;
 
 		const { assignment } = htmlAttr;
 		if (assignment == null) return;
@@ -46,6 +50,31 @@ const rule: RuleModule = {
 };
 
 export default rule;
+
+/**
+ * True when this HTML prop comes from Lit's `@property` / `static properties` (web-component-analyzer `meta`),
+ * excluding `@internalProperty` and `@state`.
+ */
+function isLitReactivePublicProperty(prop: HtmlProp, context: RuleModuleContext): boolean {
+	const member = prop.declaration;
+	if (member == null || member.kind !== "property" || member.meta == null) {
+		return false;
+	}
+
+	const decorator = member.meta.node?.decorator;
+	if (decorator == null) {
+		// Lit `static properties` / config without a per-field decorator
+		return true;
+	}
+
+	const decoratorId = getNodeIdentifier(decorator, context.ts);
+	if (decoratorId == null) {
+		return true;
+	}
+
+	const decoratorName = decoratorId.text;
+	return decoratorName !== "internalProperty" && decoratorName !== "state";
+}
 
 function makeFix(htmlAttr: HtmlNodeAttr): RuleFix | undefined {
 	const assignment = htmlAttr.assignment;
