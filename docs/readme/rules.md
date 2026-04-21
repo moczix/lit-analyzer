@@ -20,7 +20,7 @@ Each rule can have severity of `off`, `warning` or `error`. You can toggle rules
 | Rule    | Description | Severity normal | Severity strict |
 | :------ | ----------- | --------------- | --------------- |
 | [no-unknown-attribute](#-no-unknown-attribute-no-unknown-property)<br> [no-unknown-property](#-no-unknown-attribute-no-unknown-property) | You will get a warning whenever you use an unknown attribute or property within your `lit-html` template. | off | warning |
-| [prefer-property-binding](#prefer-property-binding) | For custom elements, prefer Lit property bindings (`.prop`) over attribute bindings (`prop="..."`) when the name is declared as a class property, so TypeScript checks the value as an expression. | off | warning |
+| [prefer-property-binding](#prefer-property-binding) | For custom elements, prefer Lit property bindings (`.prop`) over attribute bindings (`prop="..."`) when the name is a Lit reactive property (`@property` / `static properties`), so TypeScript checks the value as an expression. Does not apply to plain fields or native HTML attributes without Lit `meta`. | off | warning |
 | [no-unknown-event](#-no-unknown-event)       | When using event bindings it's checked that the event names are fired. | off | off |
 | [no-unknown-slot](#-no-unknown-slot)         | Using the "@slot" jsdoc tag on your custom element class, you can tell which slots are accepted for a particular element. | off | warning |
 | [no-legacy-attribute](#no-legacy-attribute)         | Disallows use of legacy Polymer binding syntax (e.g. `foo$=`). | off | warning |
@@ -177,7 +177,7 @@ html`<input .value="${value}" type="button" />`
 
 #### prefer-property-binding
 
-When a custom element declares a Lit `@property` (or equivalent) member, using an HTML attribute binding (`kind="dropdown"`) still sets the property at runtime, but the analyzer and TypeScript treat the value like a string attribute. Prefer a property binding so the right-hand side is a normal JavaScript expression:
+When a custom element declares a Lit reactive property (`@property({...})` or `static properties`), using an HTML attribute binding (`kind="dropdown"`) still sets the property at runtime, but the analyzer and TypeScript treat the value like a string attribute. Prefer a property binding so the right-hand side is a normal JavaScript expression. This rule **only** considers members that web-component-analyzer marks with Lit `meta` (not arbitrary class fields or native HTML attributes). `@internalProperty` and `@state` are ignored.
 
 **The following example is considered a warning:**
 
