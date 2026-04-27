@@ -65,3 +65,36 @@ tsTest("Does not report attribute binding for a plain class field without Lit @p
 	);
 	hasNoDiagnostics(t, diagnostics);
 });
+
+tsTest("Ignores spec files by default", t => {
+	const { diagnostics } = getDiagnostics(
+		[
+			makeElement({ properties: ["kind: string"] }),
+			{
+				fileName: "main.spec.ts",
+				entry: true,
+				text: `import "./my-element.js"; html\`<my-element kind="dropdown"></my-element>\`;`
+			}
+		],
+		{ rules: { "prefer-property-binding": true } }
+	);
+	hasNoDiagnostics(t, diagnostics);
+});
+
+tsTest("Can include spec files when ignoreFiles is empty", t => {
+	const { diagnostics } = getDiagnostics(
+		[
+			makeElement({ properties: ["kind: string"] }),
+			{
+				fileName: "main.spec.ts",
+				entry: true,
+				text: `import "./my-element.js"; html\`<my-element kind="dropdown"></my-element>\`;`
+			}
+		],
+		{
+			rules: { "prefer-property-binding": true },
+			preferPropertyBinding: { ignoreFiles: [] }
+		}
+	);
+	hasDiagnostic(t, diagnostics, "prefer-property-binding");
+});

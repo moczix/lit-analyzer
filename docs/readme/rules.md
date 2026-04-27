@@ -179,6 +179,16 @@ html`<input .value="${value}" type="button" />`
 
 When a custom element declares a Lit reactive property (`@property({...})` or `static properties`), using an HTML attribute binding (`kind="dropdown"`) still sets the property at runtime, but the analyzer and TypeScript treat the value like a string attribute. Prefer a property binding so the right-hand side is a normal JavaScript expression. This rule **only** considers members that web-component-analyzer marks with Lit `meta` (not arbitrary class fields or native HTML attributes). `@internalProperty` and `@state` are ignored.
 
+By default, files matching `**/*.spec.ts` are ignored by this rule. You can override this using:
+
+```json
+{
+	"preferPropertyBinding": {
+		"ignoreFiles": ["**/*.stories.ts"]
+	}
+}
+```
+
 **The following example is considered a warning:**
 
 <!-- prettier-ignore -->

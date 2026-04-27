@@ -1,3 +1,4 @@
+import { relative } from "path";
 import { LIT_HTML_PROP_ATTRIBUTE_MODIFIER } from "../analyze/constants.js";
 import { HtmlProp } from "../analyze/parse/parse-html-data/html-tag.js";
 import { HtmlNodeAttrAssignmentKind } from "../analyze/types/html-node/html-node-attr-assignment-types.js";
@@ -22,6 +23,7 @@ const rule: RuleModule = {
 	},
 	visitHtmlAttribute(htmlAttr: HtmlNodeAttr, context) {
 		const { htmlStore } = context;
+		if (isIgnoredFile(context)) return;
 
 		if (htmlAttr.htmlNode.kind !== HtmlNodeKind.NODE) return;
 
@@ -50,6 +52,53 @@ const rule: RuleModule = {
 };
 
 export default rule;
+
+const matcherCache = new Map<string, RegExp>();
+
+function isIgnoredFile(context: RuleModuleContext): boolean {
+	const patterns = context.config.preferPropertyBinding.ignoreFiles || [];
+	if (patterns.length === 0) return false;
+
+	const absolutePath = normalizeSlashes(context.file.fileName);
+	const relativePath = normalizeSlashes(relative(context.config.cwd, context.file.fileName));
+
+	return patterns.some(pattern => {
+		const regex = getGlobRegex(pattern);
+		return regex.test(absolutePath) || regex.test(relativePath);
+	});
+}
+
+function getGlobRegex(pattern: string): RegExp {
+	const normalized = normalizePattern(pattern);
+
+	let cached = matcherCache.get(normalized);
+	if (cached != null) return cached;
+
+	const escaped = normalized
+		.replace(/[.+^${}()|[\]\\]/g, "\\$&")
+		.replace(/\*\*/g, "__DOUBLE_STAR__")
+		.replace(/\*/g, "[^/]*")
+		.replace(/\?/g, "[^/]")
+		.replace(/__DOUBLE_STAR__/g, ".*");
+
+	const withOptionalLeadingGlobstar = normalized.startsWith("**/") && escaped.startsWith(".*/") ? `(?:.*/)?${escaped.slice(3)}` : escaped;
+
+	cached = new RegExp(`^${withOptionalLeadingGlobstar}$`);
+	matcherCache.set(normalized, cached);
+	return cached;
+}
+
+function normalizePattern(pattern: string): string {
+	const normalized = normalizeSlashes(pattern.trim());
+	if (normalized === "") {
+		return "__never_match__";
+	}
+	return normalized.includes("/") ? normalized : `**/${normalized}`;
+}
+
+function normalizeSlashes(path: string): string {
+	return path.replace(/\\/g, "/");
+}
 
 /**
  * True when this HTML prop comes from Lit's `@property` / `static properties` (web-component-analyzer `meta`),

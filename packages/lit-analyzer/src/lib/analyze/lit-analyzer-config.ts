@@ -2,6 +2,9 @@ import { HTMLDataV1 } from "vscode-html-languageservice";
 import { LitDiagnosticSeverity } from "./types/lit-diagnostic.js";
 
 export type LitAnalyzerRuleSeverity = "on" | "off" | "warn" | "warning" | "error" | 0 | 1 | 2 | true | false;
+export interface PreferPropertyBindingConfig {
+	ignoreFiles: string[];
+}
 
 export type LitAnalyzerRuleId =
 	| "no-unknown-tag-name"
@@ -122,6 +125,7 @@ export interface LitAnalyzerConfig {
 	strict: boolean;
 	rules: LitAnalyzerRules;
 	securitySystem: LitSecuritySystem;
+	preferPropertyBinding: PreferPropertyBindingConfig;
 
 	disable: boolean;
 	logging: LitAnalyzerLogging;
@@ -166,6 +170,9 @@ export function makeConfig(userOptions: Partial<LitAnalyzerConfig> = {}): LitAna
 		strict: userOptions.strict || false,
 		rules: makeRules(userOptions),
 		securitySystem: userOptions.securitySystem || "off",
+		preferPropertyBinding: {
+			ignoreFiles: userOptions.preferPropertyBinding?.ignoreFiles || ["**/*.spec.ts"]
+		},
 
 		disable: userOptions.disable || false,
 		logging: userOptions.logging || "off",

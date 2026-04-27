@@ -305,6 +305,16 @@
 							"verbose"
 						]
 					},
+					"lit-plugin.preferPropertyBinding.ignoreFiles": {
+						"type": "array",
+						"description": "Glob patterns of files excluded from the 'prefer-property-binding' rule.",
+						"items": {
+							"type": "string"
+						},
+						"default": [
+							"**/*.spec.ts"
+						]
+					},
 					"lit-plugin.rules.no-unknown-tag-name": {
 						"type": "string",
 						"description": "Check the existence of tag names.",

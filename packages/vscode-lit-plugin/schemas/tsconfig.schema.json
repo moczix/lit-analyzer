@@ -98,6 +98,20 @@
 									"default": "off",
 									"enum": ["off", "verbose"]
 								},
+								"preferPropertyBinding": {
+									"type": "object",
+									"description": "Configuration for the 'prefer-property-binding' rule.",
+									"properties": {
+										"ignoreFiles": {
+											"type": "array",
+											"description": "Glob patterns of file paths to exclude from 'prefer-property-binding' checks.",
+											"items": {
+												"type": "string"
+											},
+											"default": ["**/*.spec.ts"]
+										}
+									}
+								},
 								"rules": {
 									"title": "Rules",
 									"description": "Rules for lit-plugin are enabled/disabled in this object.",

@@ -5,6 +5,7 @@
 | `rules` | Enable/disable individual rules or set their severity. Example: `{"no-unknown-tag-name": "off"}` | `{"rule-name": "off" \| "warn" \| "error"}` | The default rules enabled depend on the `strict` option |
 | `disable` | Completely disable this plugin. | `boolean` | false |
 | `dontShowSuggestions` | This option sets strict as  | `boolean` | false |
+| `preferPropertyBinding.ignoreFiles` | Glob patterns of files excluded from checks in the `prefer-property-binding` rule. | `string[]` | ["**/*.spec.ts"] |
 | `htmlTemplateTags` | List of template tags to enable html support in. | `string[]` | ["html", "raw"] | |
 | `cssTemplateTags` | This option sets strict as | `string[]` | ["css"] |
 | `globalTags` |  List of html tag names that you expect to be present at all times. | `string[]` | |
