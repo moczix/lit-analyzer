@@ -31,6 +31,18 @@ tsTest("Don't report missing imports when the custom element has been imported 2
 	hasNoDiagnostics(t, diagnostics);
 });
 
+tsTest("Don't report missing import when the custom element is defined in the same file as the template", t => {
+	const { diagnostics } = getDiagnostics(
+		`
+		class SameFileEl extends HTMLElement {}
+		customElements.define("same-file-el", SameFileEl);
+		html\`<same-file-el></same-file-el>\`;
+		`,
+		{ rules: { "no-missing-import": true } }
+	);
+	hasNoDiagnostics(t, diagnostics);
+});
+
 tsTest("Suggest adding correct import statement", t => {
 	const fileContentWithMissingImport = "html`<my-element></my-element>`";
 	const elementTagWithoutImport = "my-element";
