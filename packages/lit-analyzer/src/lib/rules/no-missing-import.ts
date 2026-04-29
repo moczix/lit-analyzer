@@ -27,6 +27,11 @@ const rule: RuleModule = {
 		const definition = definitionStore.getDefinitionForTagName(htmlNode.tagName);
 		if (definition == null) return;
 
+		// Custom element defined in this same source file does not need an ES import.
+		if (definition.sourceFile.fileName === file.fileName) {
+			return;
+		}
+
 		// Check if the tag name has been imported in the file of the template.
 		const isDefinitionImported = dependencyStore.hasTagNameBeenImported(file.fileName, htmlNode.tagName);
 
