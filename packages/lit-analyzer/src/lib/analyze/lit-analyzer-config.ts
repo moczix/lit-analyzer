@@ -2,9 +2,6 @@ import { HTMLDataV1 } from "vscode-html-languageservice";
 import { LitDiagnosticSeverity } from "./types/lit-diagnostic.js";
 
 export type LitAnalyzerRuleSeverity = "on" | "off" | "warn" | "warning" | "error" | 0 | 1 | 2 | true | false;
-export interface PreferPropertyBindingConfig {
-	ignoreFiles: string[];
-}
 
 export type LitAnalyzerRuleId =
 	| "no-unknown-tag-name"
@@ -121,11 +118,16 @@ export type LitAnalyzerLogging = "off" | "error" | "warn" | "debug" | "verbose";
 
 export type LitSecuritySystem = "off" | "ClosureSafeTypes";
 
+/** Options for the prefer-property-binding rule. */
+export interface PreferPropertyBindingConfig {
+	/** Glob patterns (relative to cwd or absolute); matching files skip the rule. Default ignores spec.ts files. */
+	ignoreFiles?: string[];
+}
+
 export interface LitAnalyzerConfig {
 	strict: boolean;
 	rules: LitAnalyzerRules;
 	securitySystem: LitSecuritySystem;
-	preferPropertyBinding: PreferPropertyBindingConfig;
 
 	disable: boolean;
 	logging: LitAnalyzerLogging;
@@ -143,6 +145,8 @@ export interface LitAnalyzerConfig {
 	globalAttributes: string[];
 	globalEvents: string[];
 	customHtmlData: (string | HTMLDataV1)[] | string | HTMLDataV1;
+
+	preferPropertyBinding: PreferPropertyBindingConfig;
 }
 
 function expectNever(never: never) {
@@ -170,9 +174,6 @@ export function makeConfig(userOptions: Partial<LitAnalyzerConfig> = {}): LitAna
 		strict: userOptions.strict || false,
 		rules: makeRules(userOptions),
 		securitySystem: userOptions.securitySystem || "off",
-		preferPropertyBinding: {
-			ignoreFiles: userOptions.preferPropertyBinding?.ignoreFiles || ["**/*.spec.ts"]
-		},
 
 		disable: userOptions.disable || false,
 		logging: userOptions.logging || "off",
@@ -193,7 +194,11 @@ export function makeConfig(userOptions: Partial<LitAnalyzerConfig> = {}): LitAna
 		globalTags: userOptions.globalTags || getDeprecatedOption(userOptions, "externalHtmlTagNames") || [],
 		globalAttributes: userOptions.globalAttributes || [],
 		globalEvents: userOptions.globalEvents || [],
-		customHtmlData: userOptions.customHtmlData || []
+		customHtmlData: userOptions.customHtmlData || [],
+
+		preferPropertyBinding: {
+			ignoreFiles: userOptions.preferPropertyBinding?.ignoreFiles ?? ["**/*.spec.ts"]
+		}
 	};
 }
 
