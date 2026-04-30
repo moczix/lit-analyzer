@@ -65,3 +65,94 @@ tsTest("Does not report attribute binding for a plain class field without Lit @p
 	);
 	hasNoDiagnostics(t, diagnostics);
 });
+
+tsTest("Ignores spec files by default", t => {
+	const { diagnostics } = getDiagnostics(
+		[
+			makeElement({ properties: ["kind: string"] }),
+			{
+				fileName: "main.spec.ts",
+				entry: true,
+				text: `import "./my-element.js"; html\`<my-element kind="dropdown"></my-element>\`;`
+			}
+		],
+		{ rules: { "prefer-property-binding": true } }
+	);
+	hasNoDiagnostics(t, diagnostics);
+});
+
+tsTest("Can include spec files when ignoreFiles is empty", t => {
+	const { diagnostics } = getDiagnostics(
+		[
+			makeElement({ properties: ["kind: string"] }),
+			{
+				fileName: "main.spec.ts",
+				entry: true,
+				text: `import "./my-element.js"; html\`<my-element kind="dropdown"></my-element>\`;`
+			}
+		],
+		{
+			rules: { "prefer-property-binding": true },
+			preferPropertyBinding: { ignoreFiles: [] }
+		}
+	);
+	hasDiagnostic(t, diagnostics, "prefer-property-binding");
+});
+
+tsTest("Does not report attribute binding when the value uses ifDefined", t => {
+	const { diagnostics } = getDiagnostics(
+		[
+			makeElement({ properties: ["kind: string"] }),
+			{
+				fileName: "main.ts",
+				entry: true,
+				text: `
+				import "./my-element.js";
+				type ifDefined = Function;
+				const x: string | undefined = "a";
+				html\`<my-element kind="\${ifDefined(x)}"></my-element>\`;
+				`
+			}
+		],
+		{ rules: { "prefer-property-binding": true } }
+	);
+	hasNoDiagnostics(t, diagnostics);
+});
+
+tsTest("Does not report attribute binding when the value uses classMap on class", t => {
+	const { diagnostics } = getDiagnostics(
+		[
+			makeElement({ properties: ["class: string"] }),
+			{
+				fileName: "main.ts",
+				entry: true,
+				text: `
+				import "./my-element.js";
+				type classMap = Function;
+				html\`<my-element class="\${classMap({ a: true })}"></my-element>\`;
+				`
+			}
+		],
+		{ rules: { "prefer-property-binding": true } }
+	);
+	hasNoDiagnostics(t, diagnostics);
+});
+
+tsTest("Does not report attribute binding when the value uses styleMap on style", t => {
+	const { diagnostics } = getDiagnostics(
+		[
+			makeElement({ properties: ["style: string"] }),
+			{
+				fileName: "main.ts",
+				entry: true,
+				text: `
+				import "./my-element.js";
+				type styleMap = Function;
+				html\`<my-element style="\${styleMap({ color: "red" })}"></my-element>\`;
+				`
+			}
+		],
+		{ rules: { "prefer-property-binding": true } }
+	);
+	hasNoDiagnostics(t, diagnostics);
+});

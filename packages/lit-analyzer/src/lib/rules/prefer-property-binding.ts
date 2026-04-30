@@ -1,6 +1,7 @@
+import { relative } from "path";
 import { LIT_HTML_PROP_ATTRIBUTE_MODIFIER } from "../analyze/constants.js";
 import { HtmlProp } from "../analyze/parse/parse-html-data/html-tag.js";
-import { HtmlNodeAttrAssignmentKind } from "../analyze/types/html-node/html-node-attr-assignment-types.js";
+import { HtmlNodeAttrAssignment, HtmlNodeAttrAssignmentKind } from "../analyze/types/html-node/html-node-attr-assignment-types.js";
 import { HtmlNodeAttr, HtmlNodeAttrKind } from "../analyze/types/html-node/html-node-attr-types.js";
 import { HtmlNodeKind } from "../analyze/types/html-node/html-node-types.js";
 import { RuleFix } from "../analyze/types/rule/rule-fix.js";
@@ -9,11 +10,15 @@ import { RuleModuleContext } from "../analyze/types/rule/rule-module-context.js"
 import { getNodeIdentifier } from "../analyze/util/ast-util.js";
 import { isCustomElementTagName } from "../analyze/util/is-valid-name.js";
 import { documentRangeToSFRange, rangeFromHtmlNodeAttr } from "../analyze/util/range-util.js";
+import { getDirective } from "./util/directive/get-directive.js";
 
 /**
  * Suggests using Lit property bindings (`.prop=${...}`) instead of attribute bindings (`prop="..."`)
  * only for Lit reactive properties (`@property` / `static properties`), not for other analyzer members
  * (e.g. ad-hoc fields or DOM-like names without Lit `meta`).
+ *
+ * Skipped when the value uses built-in directives that only apply to attribute bindings (`ifDefined`,
+ * `classMap`, `styleMap`) — switching to a property binding would break `no-invalid-directive-binding`.
  */
 const rule: RuleModule = {
 	id: "prefer-property-binding",
@@ -22,6 +27,7 @@ const rule: RuleModule = {
 	},
 	visitHtmlAttribute(htmlAttr: HtmlNodeAttr, context) {
 		const { htmlStore } = context;
+		if (isIgnoredFile(context)) return;
 
 		if (htmlAttr.htmlNode.kind !== HtmlNodeKind.NODE) return;
 
@@ -39,6 +45,8 @@ const rule: RuleModule = {
 		if (assignment == null) return;
 		if (assignment.kind === HtmlNodeAttrAssignmentKind.ELEMENT_EXPRESSION) return;
 
+		if (assignmentUsesAttributeOnlyLitDirective(assignment, context)) return;
+
 		const fix = makeFix(htmlAttr);
 		context.report({
 			location: rangeFromHtmlNodeAttr(htmlAttr),
@@ -50,6 +58,68 @@ const rule: RuleModule = {
 };
 
 export default rule;
+
+/** Built-in directives that Lit documents / we validate as meaningful only in attribute bindings. */
+function assignmentUsesAttributeOnlyLitDirective(assignment: HtmlNodeAttrAssignment, context: RuleModuleContext): boolean {
+	if (assignment.kind !== HtmlNodeAttrAssignmentKind.EXPRESSION) return false;
+	const directive = getDirective(assignment, context);
+	if (directive == null || typeof directive.kind !== "string") return false;
+	switch (directive.kind) {
+		case "ifDefined":
+		case "classMap":
+		case "styleMap":
+			return true;
+		default:
+			return false;
+	}
+}
+
+const matcherCache = new Map<string, RegExp>();
+
+function isIgnoredFile(context: RuleModuleContext): boolean {
+	const patterns = context.config.preferPropertyBinding.ignoreFiles || [];
+	if (patterns.length === 0) return false;
+
+	const absolutePath = normalizeSlashes(context.file.fileName);
+	const relativePath = normalizeSlashes(relative(context.config.cwd, context.file.fileName));
+
+	return patterns.some(pattern => {
+		const regex = getGlobRegex(pattern);
+		return regex.test(absolutePath) || regex.test(relativePath);
+	});
+}
+
+function getGlobRegex(pattern: string): RegExp {
+	const normalized = normalizePattern(pattern);
+
+	let cached = matcherCache.get(normalized);
+	if (cached != null) return cached;
+
+	const escaped = normalized
+		.replace(/[.+^${}()|[\]\\]/g, "\\$&")
+		.replace(/\*\*/g, "__DOUBLE_STAR__")
+		.replace(/\*/g, "[^/]*")
+		.replace(/\?/g, "[^/]")
+		.replace(/__DOUBLE_STAR__/g, ".*");
+
+	const withOptionalLeadingGlobstar = normalized.startsWith("**/") && escaped.startsWith(".*/") ? `(?:.*/)?${escaped.slice(3)}` : escaped;
+
+	cached = new RegExp(`^${withOptionalLeadingGlobstar}$`);
+	matcherCache.set(normalized, cached);
+	return cached;
+}
+
+function normalizePattern(pattern: string): string {
+	const normalized = normalizeSlashes(pattern.trim());
+	if (normalized === "") {
+		return "__never_match__";
+	}
+	return normalized.includes("/") ? normalized : `**/${normalized}`;
+}
+
+function normalizeSlashes(path: string): string {
+	return path.replace(/\\/g, "/");
+}
 
 /**
  * True when this HTML prop comes from Lit's `@property` / `static properties` (web-component-analyzer `meta`),

@@ -118,6 +118,12 @@ export type LitAnalyzerLogging = "off" | "error" | "warn" | "debug" | "verbose";
 
 export type LitSecuritySystem = "off" | "ClosureSafeTypes";
 
+/** Options for the prefer-property-binding rule. */
+export interface PreferPropertyBindingConfig {
+	/** Glob patterns (relative to cwd or absolute); matching files skip the rule. Default ignores spec.ts files. */
+	ignoreFiles?: string[];
+}
+
 export interface LitAnalyzerConfig {
 	strict: boolean;
 	rules: LitAnalyzerRules;
@@ -139,6 +145,8 @@ export interface LitAnalyzerConfig {
 	globalAttributes: string[];
 	globalEvents: string[];
 	customHtmlData: (string | HTMLDataV1)[] | string | HTMLDataV1;
+
+	preferPropertyBinding: PreferPropertyBindingConfig;
 }
 
 function expectNever(never: never) {
@@ -186,7 +194,11 @@ export function makeConfig(userOptions: Partial<LitAnalyzerConfig> = {}): LitAna
 		globalTags: userOptions.globalTags || getDeprecatedOption(userOptions, "externalHtmlTagNames") || [],
 		globalAttributes: userOptions.globalAttributes || [],
 		globalEvents: userOptions.globalEvents || [],
-		customHtmlData: userOptions.customHtmlData || []
+		customHtmlData: userOptions.customHtmlData || [],
+
+		preferPropertyBinding: {
+			ignoreFiles: userOptions.preferPropertyBinding?.ignoreFiles ?? ["**/*.spec.ts"]
+		}
 	};
 }
 
