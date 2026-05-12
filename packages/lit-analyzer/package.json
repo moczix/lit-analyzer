@@ -1,6 +1,6 @@
 {
 	"name": "@moczix/lit-analyzer",
-	"version": "1.6.2",
+	"version": "1.6.6",
 	"publishConfig": {
 		"access": "public"
 	},
@@ -90,7 +90,7 @@
 		"cli.js"
 	],
 	"dependencies": {
-		"@vscode/web-custom-data": "^0.4.2",
+		"@vscode/web-custom-data": "^0.6.3",
 		"chalk": "^2.4.2",
 		"didyoumean2": "4.1.0",
 		"fast-glob": "^3.2.11",
